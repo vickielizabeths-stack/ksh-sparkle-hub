@@ -9,12 +9,28 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as MyBookingsRouteImport } from './routes/my-bookings'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CleanersIdRouteImport } from './routes/cleaners.$id'
+import { Route as CleanerOnboardingRouteImport } from './routes/cleaner.onboarding'
+import { Route as CleanerJobsRouteImport } from './routes/cleaner.jobs'
+import { Route as BookIdRouteImport } from './routes/book.$id'
 
+const MyBookingsRoute = MyBookingsRouteImport.update({
+  id: '/my-bookings',
+  path: '/my-bookings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,40 +38,123 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CleanersIdRoute = CleanersIdRouteImport.update({
+  id: '/cleaners/$id',
+  path: '/cleaners/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CleanerOnboardingRoute = CleanerOnboardingRouteImport.update({
+  id: '/cleaner/onboarding',
+  path: '/cleaner/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CleanerJobsRoute = CleanerJobsRouteImport.update({
+  id: '/cleaner/jobs',
+  path: '/cleaner/jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookIdRoute = BookIdRouteImport.update({
+  id: '/book/$id',
+  path: '/book/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/my-bookings': typeof MyBookingsRoute
+  '/book/$id': typeof BookIdRoute
+  '/cleaner/jobs': typeof CleanerJobsRoute
+  '/cleaner/onboarding': typeof CleanerOnboardingRoute
+  '/cleaners/$id': typeof CleanersIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/my-bookings': typeof MyBookingsRoute
+  '/book/$id': typeof BookIdRoute
+  '/cleaner/jobs': typeof CleanerJobsRoute
+  '/cleaner/onboarding': typeof CleanerOnboardingRoute
+  '/cleaners/$id': typeof CleanersIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/my-bookings': typeof MyBookingsRoute
+  '/book/$id': typeof BookIdRoute
+  '/cleaner/jobs': typeof CleanerJobsRoute
+  '/cleaner/onboarding': typeof CleanerOnboardingRoute
+  '/cleaners/$id': typeof CleanersIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/my-bookings'
+    | '/book/$id'
+    | '/cleaner/jobs'
+    | '/cleaner/onboarding'
+    | '/cleaners/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth'
-  id: '__root__' | '/' | '/auth'
+  to:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/my-bookings'
+    | '/book/$id'
+    | '/cleaner/jobs'
+    | '/cleaner/onboarding'
+    | '/cleaners/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/my-bookings'
+    | '/book/$id'
+    | '/cleaner/jobs'
+    | '/cleaner/onboarding'
+    | '/cleaners/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
+  MyBookingsRoute: typeof MyBookingsRoute
+  BookIdRoute: typeof BookIdRoute
+  CleanerJobsRoute: typeof CleanerJobsRoute
+  CleanerOnboardingRoute: typeof CleanerOnboardingRoute
+  CleanersIdRoute: typeof CleanersIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/my-bookings': {
+      id: '/my-bookings'
+      path: '/my-bookings'
+      fullPath: '/my-bookings'
+      preLoaderRoute: typeof MyBookingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -65,12 +164,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cleaners/$id': {
+      id: '/cleaners/$id'
+      path: '/cleaners/$id'
+      fullPath: '/cleaners/$id'
+      preLoaderRoute: typeof CleanersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cleaner/onboarding': {
+      id: '/cleaner/onboarding'
+      path: '/cleaner/onboarding'
+      fullPath: '/cleaner/onboarding'
+      preLoaderRoute: typeof CleanerOnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cleaner/jobs': {
+      id: '/cleaner/jobs'
+      path: '/cleaner/jobs'
+      fullPath: '/cleaner/jobs'
+      preLoaderRoute: typeof CleanerJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book/$id': {
+      id: '/book/$id'
+      path: '/book/$id'
+      fullPath: '/book/$id'
+      preLoaderRoute: typeof BookIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
+  MyBookingsRoute: MyBookingsRoute,
+  BookIdRoute: BookIdRoute,
+  CleanerJobsRoute: CleanerJobsRoute,
+  CleanerOnboardingRoute: CleanerOnboardingRoute,
+  CleanersIdRoute: CleanersIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
