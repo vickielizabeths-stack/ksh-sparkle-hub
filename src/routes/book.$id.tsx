@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { ArrowLeft, Calendar } from "lucide-react";
+import { ArrowLeft, Calendar, CheckCircle2 } from "lucide-react";
 import { fetchCleaner } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,7 @@ function BookPage() {
   const [notes, setNotes] = useState("");
   const [categoryId, setCategoryId] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
+  const [confirmed, setConfirmed] = useState<null | { when: string; address: string; total: number }>(null);
 
   const cleaner = useQuery({ queryKey: ["cleaner", id], queryFn: () => fetchCleaner(id) });
 
@@ -70,8 +71,12 @@ function BookPage() {
         total_price: total,
       });
       if (error) throw error;
-      toast.success("Booking sent! The cleaner will confirm shortly.");
-      navigate({ to: "/my-bookings" });
+      toast.success("Booking confirmed!");
+      setConfirmed({
+        when: new Date(parsed.scheduled_at).toLocaleString(),
+        address: parsed.address,
+        total,
+      });
     } catch (err) {
       const m = err instanceof z.ZodError ? err.issues[0].message : err instanceof Error ? err.message : "Booking failed";
       toast.error(m);
