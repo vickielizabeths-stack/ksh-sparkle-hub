@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { ArrowLeft, Calendar } from "lucide-react";
+import { ArrowLeft, Calendar, CheckCircle2 } from "lucide-react";
 import { fetchCleaner } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,7 @@ function BookPage() {
   const [notes, setNotes] = useState("");
   const [categoryId, setCategoryId] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
+  const [confirmed, setConfirmed] = useState<null | { when: string; address: string; total: number }>(null);
 
   const cleaner = useQuery({ queryKey: ["cleaner", id], queryFn: () => fetchCleaner(id) });
 
@@ -70,8 +71,12 @@ function BookPage() {
         total_price: total,
       });
       if (error) throw error;
-      toast.success("Booking sent! The cleaner will confirm shortly.");
-      navigate({ to: "/my-bookings" });
+      toast.success("Booking confirmed!");
+      setConfirmed({
+        when: new Date(parsed.scheduled_at).toLocaleString(),
+        address: parsed.address,
+        total,
+      });
     } catch (err) {
       const m = err instanceof z.ZodError ? err.issues[0].message : err instanceof Error ? err.message : "Booking failed";
       toast.error(m);
@@ -79,6 +84,31 @@ function BookPage() {
       setSubmitting(false);
     }
   };
+
+  if (confirmed) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-16">
+        <div className="rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-card)]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success/10 text-success">
+            <CheckCircle2 className="h-10 w-10" />
+          </div>
+          <h1 className="mt-4 font-display text-2xl font-bold">Booking confirmed!</h1>
+          <p className="mt-2 text-muted-foreground">
+            {c.full_name} has been notified and will accept your booking shortly.
+          </p>
+          <div className="mt-6 rounded-2xl bg-secondary/60 p-4 text-left text-sm">
+            <div className="flex justify-between py-1"><span className="text-muted-foreground">When</span><span className="font-medium">{confirmed.when}</span></div>
+            <div className="flex justify-between py-1"><span className="text-muted-foreground">Where</span><span className="font-medium">{confirmed.address}</span></div>
+            <div className="flex justify-between py-1"><span className="text-muted-foreground">Total</span><span className="font-bold text-primary">KES {confirmed.total.toLocaleString()}</span></div>
+          </div>
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <Button onClick={() => navigate({ to: "/my-bookings" })}>View my bookings</Button>
+            <Button variant="outline" onClick={() => navigate({ to: "/" })}>Back to home</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
