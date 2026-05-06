@@ -51,7 +51,18 @@ function AuthPage() {
         phone: mode === "signup" ? phone : undefined,
       });
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        // Pre-check for duplicate phone (email uniqueness is enforced by auth)
+        if (parsed.phone) {
+          const { data: existingPhone } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("phone", parsed.phone)
+            .maybeSingle();
+          if (existingPhone) {
+            throw new Error("An account with this email or phone number already exists.");
+          }
+        }
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email: parsed.email,
           password: parsed.password,
           options: {
@@ -59,7 +70,17 @@ function AuthPage() {
             data: { full_name: parsed.fullName, phone: parsed.phone },
           },
         });
-        if (error) throw error;
+        if (error) {
+          const msg = error.message.toLowerCase();
+          if (msg.includes("registered") || msg.includes("already") || msg.includes("exists")) {
+            throw new Error("An account with this email or phone number already exists.");
+          }
+          throw error;
+        }
+        // Supabase returns a user with empty identities array when email already exists
+        if (signUpData.user && signUpData.user.identities && signUpData.user.identities.length === 0) {
+          throw new Error("An account with this email or phone number already exists.");
+        }
         toast.success("We sent a 6-digit code to your email.");
         setAwaitingOtp(true);
       } else {

@@ -1,10 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Search, ShieldCheck, Sparkles, Clock } from "lucide-react";
 import * as Icons from "lucide-react";
 import { useState } from "react";
 import { fetchApprovedCleaners, fetchCategories } from "@/lib/queries";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/StarRating";
@@ -21,6 +20,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [activeCat, setActiveCat] = useState<string | null>(null);
 
@@ -85,7 +85,7 @@ function Home() {
               <CategoryChip
                 key={c.id}
                 active={activeCat === c.id}
-                onClick={() => setActiveCat(c.id)}
+                onClick={() => navigate({ to: "/services/$id", params: { id: c.id } })}
                 label={c.name}
                 iconName={c.icon ?? "Sparkles"}
               />

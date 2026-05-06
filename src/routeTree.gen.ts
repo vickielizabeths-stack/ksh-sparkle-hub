@@ -13,6 +13,7 @@ import { Route as MyBookingsRouteImport } from './routes/my-bookings'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ServicesIdRouteImport } from './routes/services.$id'
 import { Route as CleanersIdRouteImport } from './routes/cleaners.$id'
 import { Route as CleanerOnboardingRouteImport } from './routes/cleaner.onboarding'
 import { Route as CleanerJobsRouteImport } from './routes/cleaner.jobs'
@@ -36,6 +37,11 @@ const AdminRoute = AdminRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesIdRoute = ServicesIdRouteImport.update({
+  id: '/services/$id',
+  path: '/services/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CleanersIdRoute = CleanersIdRouteImport.update({
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/cleaner/jobs': typeof CleanerJobsRoute
   '/cleaner/onboarding': typeof CleanerOnboardingRoute
   '/cleaners/$id': typeof CleanersIdRoute
+  '/services/$id': typeof ServicesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/cleaner/jobs': typeof CleanerJobsRoute
   '/cleaner/onboarding': typeof CleanerOnboardingRoute
   '/cleaners/$id': typeof CleanersIdRoute
+  '/services/$id': typeof ServicesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/cleaner/jobs': typeof CleanerJobsRoute
   '/cleaner/onboarding': typeof CleanerOnboardingRoute
   '/cleaners/$id': typeof CleanersIdRoute
+  '/services/$id': typeof ServicesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/cleaner/jobs'
     | '/cleaner/onboarding'
     | '/cleaners/$id'
+    | '/services/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/cleaner/jobs'
     | '/cleaner/onboarding'
     | '/cleaners/$id'
+    | '/services/$id'
   id:
     | '__root__'
     | '/'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/cleaner/jobs'
     | '/cleaner/onboarding'
     | '/cleaners/$id'
+    | '/services/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +144,7 @@ export interface RootRouteChildren {
   CleanerJobsRoute: typeof CleanerJobsRoute
   CleanerOnboardingRoute: typeof CleanerOnboardingRoute
   CleanersIdRoute: typeof CleanersIdRoute
+  ServicesIdRoute: typeof ServicesIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -162,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/$id': {
+      id: '/services/$id'
+      path: '/services/$id'
+      fullPath: '/services/$id'
+      preLoaderRoute: typeof ServicesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cleaners/$id': {
@@ -204,6 +224,7 @@ const rootRouteChildren: RootRouteChildren = {
   CleanerJobsRoute: CleanerJobsRoute,
   CleanerOnboardingRoute: CleanerOnboardingRoute,
   CleanersIdRoute: CleanersIdRoute,
+  ServicesIdRoute: ServicesIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

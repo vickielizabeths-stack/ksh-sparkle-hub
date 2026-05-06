@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, MapPin, Calendar, Briefcase } from "lucide-react";
 import { fetchCleaner } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/StarRating";
@@ -21,7 +21,6 @@ export const Route = createFileRoute("/cleaners/$id")({
 
 function CleanerDetail() {
   const { id } = Route.useParams();
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   const cleaner = useQuery({
@@ -97,7 +96,12 @@ function CleanerDetail() {
             <Button
               size="lg"
               className="mt-6 w-full md:w-auto"
-              onClick={() => user ? navigate({ to: "/book/$id", params: { id: c.id } }) : navigate({ to: "/auth", search: { mode: "signup" } })}
+              onClick={async () => {
+                // Re-check session at click time — useAuth may still be loading on first paint
+                const { data } = await supabase.auth.getSession();
+                if (data.session) navigate({ to: "/book/$id", params: { id: c.id } });
+                else navigate({ to: "/auth", search: { mode: "signin" } });
+              }}
             >
               <Calendar className="mr-2 h-4 w-4" /> Book this cleaner
             </Button>
