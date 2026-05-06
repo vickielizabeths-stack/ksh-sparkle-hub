@@ -85,7 +85,7 @@ function Home() {
               <CategoryChip
                 key={c.id}
                 active={activeCat === c.id}
-                onClick={() => setActiveCat(c.id)}
+                onClick={() => navigate({ to: "/services/$id", params: { id: c.id } })}
                 label={c.name}
                 iconName={c.icon ?? "Sparkles"}
               />
