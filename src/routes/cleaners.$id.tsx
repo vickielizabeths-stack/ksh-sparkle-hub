@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, MapPin, Calendar, Briefcase } from "lucide-react";
 import { fetchCleaner } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/StarRating";
