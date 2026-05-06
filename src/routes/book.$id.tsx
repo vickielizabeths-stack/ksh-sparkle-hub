@@ -85,6 +85,31 @@ function BookPage() {
     }
   };
 
+  if (confirmed) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-16">
+        <div className="rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-card)]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success/10 text-success">
+            <CheckCircle2 className="h-10 w-10" />
+          </div>
+          <h1 className="mt-4 font-display text-2xl font-bold">Booking confirmed!</h1>
+          <p className="mt-2 text-muted-foreground">
+            {c.full_name} has been notified and will accept your booking shortly.
+          </p>
+          <div className="mt-6 rounded-2xl bg-secondary/60 p-4 text-left text-sm">
+            <div className="flex justify-between py-1"><span className="text-muted-foreground">When</span><span className="font-medium">{confirmed.when}</span></div>
+            <div className="flex justify-between py-1"><span className="text-muted-foreground">Where</span><span className="font-medium">{confirmed.address}</span></div>
+            <div className="flex justify-between py-1"><span className="text-muted-foreground">Total</span><span className="font-bold text-primary">KES {confirmed.total.toLocaleString()}</span></div>
+          </div>
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <Button onClick={() => navigate({ to: "/my-bookings" })}>View my bookings</Button>
+            <Button variant="outline" onClick={() => navigate({ to: "/" })}>Back to home</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
       <Link to="/cleaners/$id" params={{ id: c.id }} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
