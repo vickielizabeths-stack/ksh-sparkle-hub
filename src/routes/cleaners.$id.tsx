@@ -21,7 +21,6 @@ export const Route = createFileRoute("/cleaners/$id")({
 
 function CleanerDetail() {
   const { id } = Route.useParams();
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   const cleaner = useQuery({
