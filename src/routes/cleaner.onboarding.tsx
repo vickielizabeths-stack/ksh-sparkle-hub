@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/cleaner/onboarding")({
   beforeLoad: async () => {
@@ -21,6 +21,10 @@ export const Route = createFileRoute("/cleaner/onboarding")({
 });
 
 const schema = z.object({
+  full_name: z.string().trim().min(2).max(100),
+  phone: z.string().trim().min(7).max(20),
+  national_id: z.string().trim().min(5).max(30),
+  date_of_birth: z.string().min(1, "Date of birth is required"),
   bio: z.string().trim().min(20).max(600),
   hourly_rate: z.number().min(100).max(10000),
   location: z.string().trim().min(2).max(120),
@@ -30,11 +34,17 @@ const schema = z.object({
 function Onboarding() {
   const { user, refreshRoles } = useAuth();
   const navigate = useNavigate();
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [nationalId, setNationalId] = useState("");
+  const [dob, setDob] = useState("");
   const [bio, setBio] = useState("");
   const [rate, setRate] = useState(500);
   const [location, setLocation] = useState("");
   const [years, setYears] = useState(0);
   const [selectedCats, setSelectedCats] = useState<string[]>([]);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const categories = useQuery({
@@ -45,27 +55,82 @@ function Onboarding() {
   const existing = useQuery({
     queryKey: ["my-cleaner", user?.id],
     enabled: !!user,
-    queryFn: async () => (await supabase.from("cleaner_profiles").select("*").eq("id", user!.id).maybeSingle()).data,
+    queryFn: async () => {
+      const [c, p] = await Promise.all([
+        supabase.from("cleaner_profiles").select("*").eq("id", user!.id).maybeSingle(),
+        supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle(),
+      ]);
+      return { cleaner: c.data, profile: p.data };
+    },
   });
 
   useEffect(() => {
-    if (existing.data) {
-      setBio(existing.data.bio ?? "");
-      setRate(Number(existing.data.hourly_rate));
-      setLocation(existing.data.location ?? "");
-      setYears(existing.data.years_experience);
+    const c = existing.data?.cleaner;
+    const p = existing.data?.profile;
+    if (p) {
+      setFullName(p.full_name ?? "");
+      setPhone(p.phone ?? "");
+      setNationalId(p.national_id ?? "");
+      setDob(p.date_of_birth ?? "");
+    }
+    if (c) {
+      setBio(c.bio ?? "");
+      setRate(Number(c.hourly_rate));
+      setLocation(c.location ?? "");
+      setYears(c.years_experience);
+      if (c.avatar_url) setPhotoPreview(c.avatar_url);
     }
   }, [existing.data]);
+
+  const onPhoto = (f: File | null) => {
+    setPhotoFile(f);
+    if (f) setPhotoPreview(URL.createObjectURL(f));
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
-      const parsed = schema.parse({ bio, hourly_rate: rate, location, years_experience: years });
+      const parsed = schema.parse({
+        full_name: fullName,
+        phone,
+        national_id: nationalId,
+        date_of_birth: dob,
+        bio,
+        hourly_rate: rate,
+        location,
+        years_experience: years,
+      });
       if (!user) throw new Error("Not signed in");
+      if (!photoPreview && !photoFile) throw new Error("Please upload a profile photo");
+
+      // Upload photo if a new file was selected
+      let avatarUrl: string | null = existing.data?.cleaner?.avatar_url ?? null;
+      if (photoFile) {
+        const ext = photoFile.name.split(".").pop() ?? "jpg";
+        const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+        const up = await supabase.storage.from("avatars").upload(path, photoFile, { upsert: true });
+        if (up.error) throw up.error;
+        avatarUrl = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
+      }
+
+      // Update profile (name, phone, national id, dob)
+      const profUp = await supabase.from("profiles").update({
+        full_name: parsed.full_name,
+        phone: parsed.phone,
+        national_id: parsed.national_id,
+        date_of_birth: parsed.date_of_birth,
+      }).eq("id", user.id);
+      if (profUp.error) throw profUp.error;
+
+      // Upsert cleaner profile
       const { error } = await supabase.from("cleaner_profiles").upsert({
         id: user.id,
-        ...parsed,
+        bio: parsed.bio,
+        hourly_rate: parsed.hourly_rate,
+        location: parsed.location,
+        years_experience: parsed.years_experience,
+        avatar_url: avatarUrl,
         status: "pending",
       });
       if (error) throw error;
@@ -107,6 +172,40 @@ function Onboarding() {
       </div>
 
       <form onSubmit={submit} className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] md:p-8">
+        {/* Photo */}
+        <div className="space-y-2">
+          <Label>Profile photo</Label>
+          <div className="flex items-center gap-4">
+            <div className="h-24 w-24 overflow-hidden rounded-2xl border border-border bg-secondary">
+              {photoPreview ? (
+                <img src={photoPreview} alt="Preview" className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-muted-foreground"><Upload className="h-6 w-6" /></div>
+              )}
+            </div>
+            <Input type="file" accept="image/*" onChange={(e) => onPhoto(e.target.files?.[0] ?? null)} />
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="fname">Full name</Label>
+            <Input id="fname" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone</Label>
+            <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+254 7XX XXX XXX" required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="nid">National ID</Label>
+            <Input id="nid" value={nationalId} onChange={(e) => setNationalId(e.target.value)} required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="dob">Date of birth</Label>
+            <Input id="dob" type="date" value={dob} onChange={(e) => setDob(e.target.value)} required />
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="bio">About you</Label>
           <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell customers about your experience, what you specialize in, and why they should book you." rows={4} required />
