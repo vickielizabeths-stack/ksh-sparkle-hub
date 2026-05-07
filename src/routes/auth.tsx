@@ -172,14 +172,28 @@ function AuthPage() {
             </>
           ) : (
             <>
-              <h1 className="font-display text-2xl font-bold">{mode === "signup" ? "Create your account" : "Welcome back"}</h1>
+              <h1 className="font-display text-2xl font-bold">
+                {mode === "signup" ? (role === "cleaner" ? "Become a cleaner" : "Hire a cleaner") : "Welcome back"}
+              </h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                {mode === "signup" ? "Book your first cleaner in minutes." : "Sign in to manage bookings."}
+                {mode === "signup"
+                  ? role === "cleaner"
+                    ? "Create your cleaner account. You'll set up your profile next."
+                    : "Book your first cleaner in minutes."
+                  : "Sign in to manage bookings."}
               </p>
 
               <form onSubmit={submit} className="mt-6 space-y-4">
                 {mode === "signup" && (
                   <>
+                    <div className="grid grid-cols-2 gap-2 rounded-xl bg-secondary p-1">
+                      <button type="button" onClick={() => setRole("customer")} className={`rounded-lg py-2 text-sm font-medium transition ${role === "customer" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
+                        Hire a cleaner
+                      </button>
+                      <button type="button" onClick={() => setRole("cleaner")} className={`rounded-lg py-2 text-sm font-medium transition ${role === "cleaner" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
+                        Become a cleaner
+                      </button>
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="fullName">Full name</Label>
                       <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jane Wanjiru" required />
