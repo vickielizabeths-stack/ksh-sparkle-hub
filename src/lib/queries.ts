@@ -36,6 +36,7 @@ export async function fetchApprovedCleaners(): Promise<Cleaner[]> {
     return {
       ...c,
       hourly_rate: Number(c.hourly_rate),
+      completed_jobs: c.completed_jobs ?? 0,
       full_name: profiles?.find((p) => p.id === c.id)?.full_name ?? "Cleaner",
       avg_rating: avg,
       review_count: r.length,
