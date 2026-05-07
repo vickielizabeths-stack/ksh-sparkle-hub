@@ -29,6 +29,14 @@ function Home() {
   const cleaners = useQuery({ queryKey: ["cleaners"], queryFn: fetchApprovedCleaners });
   const categories = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
 
+  const profile = useQuery({
+    queryKey: ["my-profile", user?.id],
+    enabled: !!user,
+    queryFn: async () => (await import("@/integrations/supabase/client")).supabase
+      .from("profiles").select("full_name").eq("id", user!.id).maybeSingle().then((r) => r.data),
+  });
+  const greetingName = profile.data?.full_name?.split(" ")[0] ?? user?.email?.split("@")[0];
+
   const filtered = (cleaners.data ?? []).filter((c) => {
     const matchQ = q ? `${c.full_name} ${c.location ?? ""} ${c.bio ?? ""}`.toLowerCase().includes(q.toLowerCase()) : true;
     const matchCat = activeCat ? c.categories.some((x) => x.id === activeCat) : true;
