@@ -65,6 +65,17 @@ function Home() {
               <Button onClick={() => document.getElementById("cleaners")?.scrollIntoView({ behavior: "smooth" })}>Find cleaners</Button>
             </div>
 
+            {!user && (
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Button size="lg" onClick={() => navigate({ to: "/auth", search: { mode: "signup", role: "customer" } })}>
+                  <UserPlus className="mr-1 h-4 w-4" /> Hire a cleaner
+                </Button>
+                <Button size="lg" variant="outline" onClick={() => navigate({ to: "/auth", search: { mode: "signup", role: "cleaner" } })}>
+                  <Briefcase className="mr-1 h-4 w-4" /> Become a cleaner
+                </Button>
+              </div>
+            )}
+
             <div className="mt-6 flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
               <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-success" /> Background-checked</div>
               <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-primary" /> Same-day available</div>
