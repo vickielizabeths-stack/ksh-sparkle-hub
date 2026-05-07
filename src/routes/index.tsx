@@ -4,6 +4,7 @@ import { MapPin, Search, ShieldCheck, Sparkles, Clock, UserPlus, Briefcase } fro
 import * as Icons from "lucide-react";
 import { useState } from "react";
 import { fetchApprovedCleaners, fetchCategories } from "@/lib/queries";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
