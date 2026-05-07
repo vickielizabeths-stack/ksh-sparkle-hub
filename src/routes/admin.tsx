@@ -44,12 +44,12 @@ function AdminPage() {
   };
 
   const grantAdmin = async () => {
-    if (!user) return;
-    const { error } = await supabase.from("user_roles").insert({ user_id: user.id, role: "admin" });
-    if (error) return toast.error(error.message);
-    toast.success("You are now an admin. Reload the page.");
-    setTimeout(() => window.location.reload(), 800);
-  };
+  if (!user) return;
+  const { error } = await supabase.rpc("grant_first_admin");
+  if (error) return toast.error(error.message);
+  toast.success("You are now an admin. Reload the page.");
+  setTimeout(() => window.location.reload(), 800);
+};
 
   if (loading) return <div className="p-12 text-center text-muted-foreground">Loading...</div>;
 
