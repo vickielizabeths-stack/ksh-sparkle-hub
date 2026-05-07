@@ -53,7 +53,7 @@ function Home() {
         <div className="mx-auto grid max-w-6xl gap-10 px-4 pb-12 pt-10 md:grid-cols-2 md:gap-8 md:py-20">
           <div className="flex flex-col justify-center">
             <Badge variant="outline" className="mb-4 w-fit border-primary/30 bg-primary/5 text-primary">
-              <Sparkles className="mr-1 h-3 w-3" /> Now serving across Kenya
+              <Sparkles className="mr-1 h-3 w-3" /> {user ? `Welcome back, ${greetingName}` : "Now serving across Kenya"}
             </Badge>
             <h1 className="font-display text-4xl font-bold leading-[1.05] tracking-tight md:text-6xl">
               Trusted cleaners,<br />
@@ -76,16 +76,22 @@ function Home() {
               <Button onClick={() => document.getElementById("cleaners")?.scrollIntoView({ behavior: "smooth" })}>Find cleaners</Button>
             </div>
 
-            {!user && (
-              <div className="mt-5 flex flex-wrap gap-3">
-                <Button size="lg" onClick={() => navigate({ to: "/auth", search: { mode: "signup", role: "customer" } })}>
-                  <UserPlus className="mr-1 h-4 w-4" /> Hire a cleaner
+            <div className="mt-5 flex flex-wrap gap-3">
+              {user ? (
+                <Button size="lg" onClick={() => document.getElementById("cleaners")?.scrollIntoView({ behavior: "smooth" })}>
+                  <Search className="mr-1 h-4 w-4" /> Find a cleaner
                 </Button>
-                <Button size="lg" variant="outline" onClick={() => navigate({ to: "/auth", search: { mode: "signup", role: "cleaner" } })}>
-                  <Briefcase className="mr-1 h-4 w-4" /> Become a cleaner
-                </Button>
-              </div>
-            )}
+              ) : (
+                <>
+                  <Button size="lg" onClick={() => navigate({ to: "/auth", search: { mode: "signup", role: "customer" } })}>
+                    <UserPlus className="mr-1 h-4 w-4" /> Hire a cleaner
+                  </Button>
+                  <Button size="lg" variant="outline" onClick={() => navigate({ to: "/auth", search: { mode: "signup", role: "cleaner" } })}>
+                    <Briefcase className="mr-1 h-4 w-4" /> Become a cleaner
+                  </Button>
+                </>
+              )}
+            </div>
 
             <div className="mt-6 flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
               <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-success" /> Background-checked</div>
