@@ -9,7 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sparkles, MailCheck } from "lucide-react";
 
-const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).optional() });
+const searchSchema = z.object({
+  mode: z.enum(["signin", "signup"]).optional(),
+  role: z.enum(["customer", "cleaner"]).optional(),
+});
 
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
@@ -32,6 +35,7 @@ function AuthPage() {
   const navigate = useNavigate();
   const { refreshRoles } = useAuth();
   const [mode, setMode] = useState<"signin" | "signup">(search.mode ?? "signin");
+  const [role, setRole] = useState<"customer" | "cleaner">(search.role ?? "customer");
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -67,7 +71,7 @@ function AuthPage() {
           password: parsed.password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
-            data: { full_name: parsed.fullName, phone: parsed.phone },
+            data: { full_name: parsed.fullName, phone: parsed.phone, role },
           },
         });
         if (error) {
@@ -77,7 +81,6 @@ function AuthPage() {
           }
           throw error;
         }
-        // Supabase returns a user with empty identities array when email already exists
         if (signUpData.user && signUpData.user.identities && signUpData.user.identities.length === 0) {
           throw new Error("An account with this email or phone number already exists.");
         }
@@ -108,7 +111,11 @@ function AuthPage() {
       if (error) throw error;
       toast.success("Email verified!");
       await refreshRoles();
-      navigate({ to: "/" });
+      if (role === "cleaner") {
+        navigate({ to: "/cleaner/onboarding" });
+      } else {
+        navigate({ to: "/" });
+      }
     } catch (err) {
       const m = err instanceof Error ? err.message : "Invalid code";
       toast.error(m);
@@ -165,14 +172,28 @@ function AuthPage() {
             </>
           ) : (
             <>
-              <h1 className="font-display text-2xl font-bold">{mode === "signup" ? "Create your account" : "Welcome back"}</h1>
+              <h1 className="font-display text-2xl font-bold">
+                {mode === "signup" ? (role === "cleaner" ? "Become a cleaner" : "Hire a cleaner") : "Welcome back"}
+              </h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                {mode === "signup" ? "Book your first cleaner in minutes." : "Sign in to manage bookings."}
+                {mode === "signup"
+                  ? role === "cleaner"
+                    ? "Create your cleaner account. You'll set up your profile next."
+                    : "Book your first cleaner in minutes."
+                  : "Sign in to manage bookings."}
               </p>
 
               <form onSubmit={submit} className="mt-6 space-y-4">
                 {mode === "signup" && (
                   <>
+                    <div className="grid grid-cols-2 gap-2 rounded-xl bg-secondary p-1">
+                      <button type="button" onClick={() => setRole("customer")} className={`rounded-lg py-2 text-sm font-medium transition ${role === "customer" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
+                        Hire a cleaner
+                      </button>
+                      <button type="button" onClick={() => setRole("cleaner")} className={`rounded-lg py-2 text-sm font-medium transition ${role === "cleaner" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
+                        Become a cleaner
+                      </button>
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="fullName">Full name</Label>
                       <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jane Wanjiru" required />

@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, Search, ShieldCheck, Sparkles, Clock } from "lucide-react";
+import { MapPin, Search, ShieldCheck, Sparkles, Clock, UserPlus, Briefcase } from "lucide-react";
 import * as Icons from "lucide-react";
 import { useState } from "react";
 import { fetchApprovedCleaners, fetchCategories } from "@/lib/queries";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/StarRating";
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [q, setQ] = useState("");
   const [activeCat, setActiveCat] = useState<string | null>(null);
 
@@ -62,6 +64,17 @@ function Home() {
               </div>
               <Button onClick={() => document.getElementById("cleaners")?.scrollIntoView({ behavior: "smooth" })}>Find cleaners</Button>
             </div>
+
+            {!user && (
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Button size="lg" onClick={() => navigate({ to: "/auth", search: { mode: "signup", role: "customer" } })}>
+                  <UserPlus className="mr-1 h-4 w-4" /> Hire a cleaner
+                </Button>
+                <Button size="lg" variant="outline" onClick={() => navigate({ to: "/auth", search: { mode: "signup", role: "cleaner" } })}>
+                  <Briefcase className="mr-1 h-4 w-4" /> Become a cleaner
+                </Button>
+              </div>
+            )}
 
             <div className="mt-6 flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
               <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-success" /> Background-checked</div>
