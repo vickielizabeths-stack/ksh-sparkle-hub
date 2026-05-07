@@ -11,13 +11,14 @@ export type Cleaner = {
   full_name: string | null;
   avg_rating: number;
   review_count: number;
+  completed_jobs: number;
   categories: { id: string; name: string }[];
 };
 
 export async function fetchApprovedCleaners(): Promise<Cleaner[]> {
   const { data: cleaners, error } = await supabase
     .from("cleaner_profiles")
-    .select("id, bio, hourly_rate, location, years_experience, avatar_url, status")
+    .select("id, bio, hourly_rate, location, years_experience, avatar_url, status, completed_jobs")
     .eq("status", "approved");
   if (error) throw error;
   if (!cleaners?.length) return [];
