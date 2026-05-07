@@ -4,6 +4,7 @@ import { MapPin, Search, ShieldCheck, Sparkles, Clock, UserPlus, Briefcase } fro
 import * as Icons from "lucide-react";
 import { useState } from "react";
 import { fetchApprovedCleaners, fetchCategories } from "@/lib/queries";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,16 @@ function Home() {
   const cleaners = useQuery({ queryKey: ["cleaners"], queryFn: fetchApprovedCleaners });
   const categories = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
 
+  const profile = useQuery({
+    queryKey: ["my-profile", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("full_name").eq("id", user!.id).maybeSingle();
+      return data;
+    },
+  });
+  const greetingName = profile.data?.full_name?.split(" ")[0] ?? user?.email?.split("@")[0];
+
   const filtered = (cleaners.data ?? []).filter((c) => {
     const matchQ = q ? `${c.full_name} ${c.location ?? ""} ${c.bio ?? ""}`.toLowerCase().includes(q.toLowerCase()) : true;
     const matchCat = activeCat ? c.categories.some((x) => x.id === activeCat) : true;
@@ -42,7 +53,7 @@ function Home() {
         <div className="mx-auto grid max-w-6xl gap-10 px-4 pb-12 pt-10 md:grid-cols-2 md:gap-8 md:py-20">
           <div className="flex flex-col justify-center">
             <Badge variant="outline" className="mb-4 w-fit border-primary/30 bg-primary/5 text-primary">
-              <Sparkles className="mr-1 h-3 w-3" /> Now serving across Kenya
+              <Sparkles className="mr-1 h-3 w-3" /> {user ? `Welcome back, ${greetingName}` : "Now serving across Kenya"}
             </Badge>
             <h1 className="font-display text-4xl font-bold leading-[1.05] tracking-tight md:text-6xl">
               Trusted cleaners,<br />
@@ -65,16 +76,22 @@ function Home() {
               <Button onClick={() => document.getElementById("cleaners")?.scrollIntoView({ behavior: "smooth" })}>Find cleaners</Button>
             </div>
 
-            {!user && (
-              <div className="mt-5 flex flex-wrap gap-3">
-                <Button size="lg" onClick={() => navigate({ to: "/auth", search: { mode: "signup", role: "customer" } })}>
-                  <UserPlus className="mr-1 h-4 w-4" /> Hire a cleaner
+            <div className="mt-5 flex flex-wrap gap-3">
+              {user ? (
+                <Button size="lg" onClick={() => document.getElementById("cleaners")?.scrollIntoView({ behavior: "smooth" })}>
+                  <Search className="mr-1 h-4 w-4" /> Find a cleaner
                 </Button>
-                <Button size="lg" variant="outline" onClick={() => navigate({ to: "/auth", search: { mode: "signup", role: "cleaner" } })}>
-                  <Briefcase className="mr-1 h-4 w-4" /> Become a cleaner
-                </Button>
-              </div>
-            )}
+              ) : (
+                <>
+                  <Button size="lg" onClick={() => navigate({ to: "/auth", search: { mode: "signup", role: "customer" } })}>
+                    <UserPlus className="mr-1 h-4 w-4" /> Hire a cleaner
+                  </Button>
+                  <Button size="lg" variant="outline" onClick={() => navigate({ to: "/auth", search: { mode: "signup", role: "cleaner" } })}>
+                    <Briefcase className="mr-1 h-4 w-4" /> Become a cleaner
+                  </Button>
+                </>
+              )}
+            </div>
 
             <div className="mt-6 flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
               <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-success" /> Background-checked</div>
@@ -184,6 +201,7 @@ function CleanerCard({ c }: { c: import("@/lib/queries").Cleaner }) {
           <span className="text-xs text-muted-foreground">
             {c.review_count > 0 ? `${c.avg_rating.toFixed(1)} (${c.review_count})` : "New"}
           </span>
+          <span className="text-xs text-muted-foreground">· {c.completed_jobs} {c.completed_jobs === 1 ? "job" : "jobs"}</span>
         </div>
         {c.bio && <p className="line-clamp-2 text-sm text-muted-foreground">{c.bio}</p>}
         <div className="mt-auto flex flex-wrap gap-1.5">

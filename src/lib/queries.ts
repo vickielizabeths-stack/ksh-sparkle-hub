@@ -11,13 +11,14 @@ export type Cleaner = {
   full_name: string | null;
   avg_rating: number;
   review_count: number;
+  completed_jobs: number;
   categories: { id: string; name: string }[];
 };
 
 export async function fetchApprovedCleaners(): Promise<Cleaner[]> {
   const { data: cleaners, error } = await supabase
     .from("cleaner_profiles")
-    .select("id, bio, hourly_rate, location, years_experience, avatar_url, status")
+    .select("id, bio, hourly_rate, location, years_experience, avatar_url, status, completed_jobs")
     .eq("status", "approved");
   if (error) throw error;
   if (!cleaners?.length) return [];
@@ -35,6 +36,7 @@ export async function fetchApprovedCleaners(): Promise<Cleaner[]> {
     return {
       ...c,
       hourly_rate: Number(c.hourly_rate),
+      completed_jobs: c.completed_jobs ?? 0,
       full_name: profiles?.find((p) => p.id === c.id)?.full_name ?? "Cleaner",
       avg_rating: avg,
       review_count: r.length,
@@ -58,6 +60,7 @@ export async function fetchCleaner(id: string): Promise<Cleaner | null> {
   return {
     ...c,
     hourly_rate: Number(c.hourly_rate),
+    completed_jobs: c.completed_jobs ?? 0,
     full_name: profile?.full_name ?? "Cleaner",
     avg_rating: avg,
     review_count: ratings?.length ?? 0,

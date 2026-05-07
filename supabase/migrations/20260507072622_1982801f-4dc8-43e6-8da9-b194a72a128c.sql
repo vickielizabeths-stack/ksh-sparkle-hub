@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.bump_completed_jobs() FROM PUBLIC, anon, authenticated;
