@@ -19,13 +19,6 @@ export const Route = createFileRoute("/")({
     ],
   }),
 });
-  head: () => ({
-    meta: [
-      { title: "SafiHub — Trusted cleaners in Kenya" },
-      { name: "description", content: "Browse vetted cleaners across Kenya. Book home, office and deep cleaning in minutes." },
-    ],
-  }),
-});
 
 function Home() {
   const navigate = useNavigate();
