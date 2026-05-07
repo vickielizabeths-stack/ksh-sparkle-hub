@@ -58,10 +58,9 @@ export function Header() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate({ to: "/" })}>Browse cleaners</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate({ to: "/" })}>Find a cleaner</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate({ to: "/my-bookings" })}>My bookings</DropdownMenuItem>
                 {isCleaner && <DropdownMenuItem onClick={() => navigate({ to: "/cleaner/jobs" })}>My jobs</DropdownMenuItem>}
-                {!isCleaner && <DropdownMenuItem onClick={() => navigate({ to: "/cleaner/onboarding" })}>Become a cleaner</DropdownMenuItem>}
                 {isAdmin && <DropdownMenuItem onClick={() => navigate({ to: "/admin" })}>Admin panel</DropdownMenuItem>}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={async () => { await signOut(); navigate({ to: "/" }); }}>
