@@ -111,7 +111,11 @@ function AuthPage() {
       if (error) throw error;
       toast.success("Email verified!");
       await refreshRoles();
-      navigate({ to: "/" });
+      if (role === "cleaner") {
+        navigate({ to: "/cleaner/onboarding" });
+      } else {
+        navigate({ to: "/" });
+      }
     } catch (err) {
       const m = err instanceof Error ? err.message : "Invalid code";
       toast.error(m);
