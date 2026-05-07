@@ -22,6 +22,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [q, setQ] = useState("");
   const [activeCat, setActiveCat] = useState<string | null>(null);
 
