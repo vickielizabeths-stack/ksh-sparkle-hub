@@ -35,6 +35,7 @@ function AuthPage() {
   const navigate = useNavigate();
   const { refreshRoles } = useAuth();
   const [mode, setMode] = useState<"signin" | "signup">(search.mode ?? "signin");
+  const [role, setRole] = useState<"customer" | "cleaner">(search.role ?? "customer");
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,7 +71,7 @@ function AuthPage() {
           password: parsed.password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
-            data: { full_name: parsed.fullName, phone: parsed.phone },
+            data: { full_name: parsed.fullName, phone: parsed.phone, role },
           },
         });
         if (error) {
@@ -80,7 +81,6 @@ function AuthPage() {
           }
           throw error;
         }
-        // Supabase returns a user with empty identities array when email already exists
         if (signUpData.user && signUpData.user.identities && signUpData.user.identities.length === 0) {
           throw new Error("An account with this email or phone number already exists.");
         }
