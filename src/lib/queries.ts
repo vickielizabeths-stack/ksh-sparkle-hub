@@ -60,6 +60,7 @@ export async function fetchCleaner(id: string): Promise<Cleaner | null> {
   return {
     ...c,
     hourly_rate: Number(c.hourly_rate),
+    completed_jobs: c.completed_jobs ?? 0,
     full_name: profile?.full_name ?? "Cleaner",
     avg_rating: avg,
     review_count: ratings?.length ?? 0,
