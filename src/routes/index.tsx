@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, Search, ShieldCheck, Sparkles, Clock } from "lucide-react";
+import { MapPin, Search, ShieldCheck, Sparkles, Clock, UserPlus, Briefcase } from "lucide-react";
 import * as Icons from "lucide-react";
 import { useState } from "react";
 import { fetchApprovedCleaners, fetchCategories } from "@/lib/queries";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/StarRating";
@@ -11,6 +12,13 @@ import hero from "@/assets/hero.jpg";
 
 export const Route = createFileRoute("/")({
   component: Home,
+  head: () => ({
+    meta: [
+      { title: "SafiHub — Trusted cleaners in Kenya" },
+      { name: "description", content: "Browse vetted cleaners across Kenya. Book home, office and deep cleaning in minutes." },
+    ],
+  }),
+});
   head: () => ({
     meta: [
       { title: "SafiHub — Trusted cleaners in Kenya" },
