@@ -33,8 +33,10 @@ function Home() {
   const profile = useQuery({
     queryKey: ["my-profile", user?.id],
     enabled: !!user,
-    queryFn: async () => (await import("@/integrations/supabase/client")).supabase
-      .from("profiles").select("full_name").eq("id", user!.id).maybeSingle().then((r) => r.data),
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("full_name").eq("id", user!.id).maybeSingle();
+      return data;
+    },
   });
   const greetingName = profile.data?.full_name?.split(" ")[0] ?? user?.email?.split("@")[0];
 
