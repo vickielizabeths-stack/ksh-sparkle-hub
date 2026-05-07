@@ -201,6 +201,7 @@ function CleanerCard({ c }: { c: import("@/lib/queries").Cleaner }) {
           <span className="text-xs text-muted-foreground">
             {c.review_count > 0 ? `${c.avg_rating.toFixed(1)} (${c.review_count})` : "New"}
           </span>
+          <span className="text-xs text-muted-foreground">· {c.completed_jobs} {c.completed_jobs === 1 ? "job" : "jobs"}</span>
         </div>
         {c.bio && <p className="line-clamp-2 text-sm text-muted-foreground">{c.bio}</p>}
         <div className="mt-auto flex flex-wrap gap-1.5">
