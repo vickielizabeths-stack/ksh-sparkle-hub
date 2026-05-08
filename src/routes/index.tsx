@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, Search, ShieldCheck, Sparkles, Clock, UserPlus, Briefcase } from "lucide-react";
+import { MapPin, Search, ShieldCheck, Sparkles, Clock, UserPlus, Briefcase, ClipboardList, UserCircle, ShieldAlert } from "lucide-react";
 import * as Icons from "lucide-react";
 import { useState } from "react";
 import { fetchApprovedCleaners, fetchCategories } from "@/lib/queries";
@@ -23,7 +23,9 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, roles, loading: authLoading } = useAuth();
+  const isCleaner = roles.includes("cleaner");
+  const isAdmin = roles.includes("admin");
   const [q, setQ] = useState("");
   const [activeCat, setActiveCat] = useState<string | null>(null);
 
@@ -45,6 +47,11 @@ function Home() {
     const matchCat = activeCat ? c.categories.some((x) => x.id === activeCat) : true;
     return matchQ && matchCat;
   });
+
+  // Cleaners and admins get a dashboard instead of the customer browse view
+  if (user && !authLoading && (isCleaner || isAdmin)) {
+    return <StaffHome name={greetingName ?? ""} isCleaner={isCleaner} isAdmin={isAdmin} />;
+  }
 
   return (
     <>
@@ -139,10 +146,14 @@ function Home() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center">
-            <p className="text-muted-foreground">No cleaners yet. Check back soon, or apply to become one.</p>
-            <Button asChild variant="outline" className="mt-4">
-              <Link to="/cleaner/onboarding">Become a cleaner</Link>
-            </Button>
+            <p className="text-muted-foreground">
+              {user ? "No cleaners match your search yet. Check back soon." : "No cleaners yet. Check back soon, or apply to become one."}
+            </p>
+            {!user && (
+              <Button asChild variant="outline" className="mt-4">
+                <Link to="/auth" search={{ mode: "signup", role: "cleaner" }}>Become a cleaner</Link>
+              </Button>
+            )}
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -211,5 +222,96 @@ function CleanerCard({ c }: { c: import("@/lib/queries").Cleaner }) {
         </div>
       </div>
     </Link>
+  );
+}
+
+function StaffHome({ name, isCleaner, isAdmin }: { name: string; isCleaner: boolean; isAdmin: boolean }) {
+  const { user } = useAuth();
+
+  const cleanerProfile = useQuery({
+    queryKey: ["my-cleaner-profile", user?.id],
+    enabled: !!user && isCleaner,
+    queryFn: async () => {
+      const { data } = await supabase.from("cleaner_profiles").select("*").eq("id", user!.id).maybeSingle();
+      return data;
+    },
+  });
+
+  const jobs = useQuery({
+    queryKey: ["my-cleaner-jobs", user?.id],
+    enabled: !!user && isCleaner,
+    queryFn: async () => {
+      const { data } = await supabase.from("bookings").select("id,status").eq("cleaner_id", user!.id);
+      return data ?? [];
+    },
+  });
+
+  const pendingApplications = useQuery({
+    queryKey: ["pending-cleaners-count"],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const { count } = await supabase.from("cleaner_profiles").select("id", { count: "exact", head: true }).eq("status", "pending");
+      return count ?? 0;
+    },
+  });
+
+  const status = cleanerProfile.data?.status;
+  const pendingJobs = (jobs.data ?? []).filter((j) => j.status === "pending").length;
+  const acceptedJobs = (jobs.data ?? []).filter((j) => j.status === "accepted").length;
+
+  return (
+    <section className="mx-auto max-w-5xl px-4 py-10">
+      <Badge variant="outline" className="mb-3 border-primary/30 bg-primary/5 text-primary">
+        <Sparkles className="mr-1 h-3 w-3" /> Welcome back{name ? `, ${name}` : ""}
+      </Badge>
+      <h1 className="font-display text-3xl font-bold md:text-4xl">Your dashboard</h1>
+      <p className="mt-1 text-muted-foreground">
+        {isCleaner ? "Manage your profile and jobs from here." : "Review applications and platform activity."}
+      </p>
+
+      <div className="mt-8 grid gap-5 md:grid-cols-2">
+        {isCleaner && (
+          <>
+            <DashCard
+              icon={<UserCircle className="h-5 w-5" />}
+              title="My profile"
+              body={status === "approved" ? "Your profile is live and visible to customers." : status === "rejected" ? "Your application was rejected. Update your profile and resubmit." : "Your profile is awaiting admin approval."}
+              cta="Edit profile"
+              to="/cleaner/onboarding"
+            />
+            <DashCard
+              icon={<ClipboardList className="h-5 w-5" />}
+              title="Jobs near you"
+              body={status !== "approved"
+                ? "Once approved, customer bookings will appear here."
+                : pendingJobs + acceptedJobs === 0
+                  ? "No jobs yet — you'll see new bookings here as soon as customers reach out."
+                  : `${pendingJobs} pending · ${acceptedJobs} accepted`}
+              cta="Open jobs"
+              to="/cleaner/jobs"
+            />
+          </>
+        )}
+        {isAdmin && (
+          <DashCard
+            icon={<ShieldAlert className="h-5 w-5" />}
+            title="Cleaner applications"
+            body={pendingApplications.data ? `${pendingApplications.data} cleaner${pendingApplications.data === 1 ? "" : "s"} awaiting vetting.` : "No applications waiting for review."}
+            cta="Open admin panel"
+            to="/admin"
+          />
+        )}
+      </div>
+    </section>
+  );
+}
+
+function DashCard({ icon, title, body, cta, to }: { icon: React.ReactNode; title: string; body: string; cta: string; to: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+      <div className="flex items-center gap-2 text-primary">{icon}<h3 className="font-display text-lg font-semibold text-foreground">{title}</h3></div>
+      <p className="mt-2 text-sm text-muted-foreground">{body}</p>
+      <Button asChild className="mt-4" variant="outline"><Link to={to}>{cta}</Link></Button>
+    </div>
   );
 }
