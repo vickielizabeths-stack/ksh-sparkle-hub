@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, Search, ShieldCheck, Sparkles, Clock, UserPlus, Briefcase } from "lucide-react";
+import { MapPin, Search, ShieldCheck, Sparkles, Clock, UserPlus, Briefcase, ClipboardList, UserCircle, ShieldAlert } from "lucide-react";
 import * as Icons from "lucide-react";
 import { useState } from "react";
 import { fetchApprovedCleaners, fetchCategories } from "@/lib/queries";
@@ -23,7 +23,9 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, roles, loading: authLoading } = useAuth();
+  const isCleaner = roles.includes("cleaner");
+  const isAdmin = roles.includes("admin");
   const [q, setQ] = useState("");
   const [activeCat, setActiveCat] = useState<string | null>(null);
 
