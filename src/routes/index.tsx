@@ -146,10 +146,14 @@ function Home() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center">
-            <p className="text-muted-foreground">No cleaners yet. Check back soon, or apply to become one.</p>
-            <Button asChild variant="outline" className="mt-4">
-              <Link to="/cleaner/onboarding">Become a cleaner</Link>
-            </Button>
+            <p className="text-muted-foreground">
+              {user ? "No cleaners match your search yet. Check back soon." : "No cleaners yet. Check back soon, or apply to become one."}
+            </p>
+            {!user && (
+              <Button asChild variant="outline" className="mt-4">
+                <Link to="/auth" search={{ mode: "signup", role: "cleaner" }}>Become a cleaner</Link>
+              </Button>
+            )}
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
