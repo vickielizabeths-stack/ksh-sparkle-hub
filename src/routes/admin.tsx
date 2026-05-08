@@ -51,9 +51,7 @@ function AdminPage() {
   setTimeout(() => window.location.reload(), 800);
 };
 
-  if (loading || (user && roles.length === 0 && cleaners.isFetching)) {
-    return <div className="p-12 text-center text-muted-foreground">Loading...</div>;
-  }
+  if (loading) return <div className="p-12 text-center text-muted-foreground">Loading...</div>;
 
   if (!isAdmin) {
     return (
