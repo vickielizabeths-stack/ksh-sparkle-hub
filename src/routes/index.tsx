@@ -48,6 +48,11 @@ function Home() {
     return matchQ && matchCat;
   });
 
+  // Cleaners and admins get a dashboard instead of the customer browse view
+  if (user && !authLoading && (isCleaner || isAdmin)) {
+    return <StaffHome name={greetingName ?? ""} isCleaner={isCleaner} isAdmin={isAdmin} />;
+  }
+
   return (
     <>
       {/* Hero */}
