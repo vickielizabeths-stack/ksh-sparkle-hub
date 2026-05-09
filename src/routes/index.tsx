@@ -1,15 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, Search, ShieldCheck, Sparkles, Clock, UserPlus, Briefcase, ClipboardList, UserCircle, ShieldAlert } from "lucide-react";
-import * as Icons from "lucide-react";
+import { MapPin, Search, Sparkles, ChevronRight, ClipboardList, UserCircle, ShieldAlert } from "lucide-react";
 import { useState } from "react";
-import { fetchApprovedCleaners, fetchCategories } from "@/lib/queries";
+import { fetchApprovedCleaners } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/StarRating";
-import hero from "@/assets/hero.jpg";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -26,11 +24,6 @@ function Home() {
   const { user, roles, loading: authLoading } = useAuth();
   const isCleaner = roles.includes("cleaner");
   const isAdmin = roles.includes("admin");
-  const [q, setQ] = useState("");
-  const [activeCat, setActiveCat] = useState<string | null>(null);
-
-  const cleaners = useQuery({ queryKey: ["cleaners"], queryFn: fetchApprovedCleaners });
-  const categories = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
 
   const profile = useQuery({
     queryKey: ["my-profile", user?.id],
@@ -40,142 +33,103 @@ function Home() {
       return data;
     },
   });
-  const greetingName = profile.data?.full_name?.split(" ")[0] ?? user?.email?.split("@")[0];
+  const greetingName = profile.data?.full_name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? "";
 
-  const filtered = (cleaners.data ?? []).filter((c) => {
-    const matchQ = q ? `${c.full_name} ${c.location ?? ""} ${c.bio ?? ""}`.toLowerCase().includes(q.toLowerCase()) : true;
-    const matchCat = activeCat ? c.categories.some((x) => x.id === activeCat) : true;
-    return matchQ && matchCat;
-  });
+  if (authLoading) return <div className="mx-auto max-w-5xl px-4 py-20 text-center text-muted-foreground">Loading…</div>;
 
-  // Cleaners and admins get a dashboard instead of the customer browse view
-  if (user && !authLoading && (isCleaner || isAdmin)) {
-    return <StaffHome name={greetingName ?? ""} isCleaner={isCleaner} isAdmin={isAdmin} />;
+  if (user && (isCleaner || isAdmin)) {
+    return <StaffHome name={greetingName} isCleaner={isCleaner} isAdmin={isAdmin} />;
   }
 
+  if (!user) return <LandingHome onGo={(role) => navigate({ to: "/auth", search: { mode: "signup", role } })} onSignIn={() => navigate({ to: "/auth" })} />;
+
+  return <CustomerHome name={greetingName} />;
+}
+
+/* ---------- Logged-out landing ---------- */
+
+function LandingHome({ onGo, onSignIn }: { onGo: (role: "customer" | "cleaner") => void; onSignIn: () => void }) {
   return (
-    <>
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 pb-12 pt-10 md:grid-cols-2 md:gap-8 md:py-20">
-          <div className="flex flex-col justify-center">
-            <Badge variant="outline" className="mb-4 w-fit border-primary/30 bg-primary/5 text-primary">
-              <Sparkles className="mr-1 h-3 w-3" /> {user ? `Welcome back, ${greetingName}` : "Now serving across Kenya"}
-            </Badge>
-            <h1 className="font-display text-4xl font-bold leading-[1.05] tracking-tight md:text-6xl">
-              Trusted cleaners,<br />
-              <span className="bg-[var(--gradient-hero)] bg-clip-text text-transparent">spotless results.</span>
-            </h1>
-            <p className="mt-5 max-w-md text-lg text-muted-foreground">
-              Book vetted professional cleaners in Nairobi, Mombasa and beyond — pay per hour, rate after the job.
-            </p>
-
-            <div className="mt-7 flex max-w-md items-center gap-2 rounded-2xl border border-border bg-card p-1.5 shadow-[var(--shadow-card)]">
-              <div className="flex flex-1 items-center gap-2 px-3">
-                <Search className="h-4 w-4 text-muted-foreground" />
-                <input
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Search by name or area"
-                  className="w-full bg-transparent py-2 text-sm outline-none"
-                />
-              </div>
-              <Button onClick={() => document.getElementById("cleaners")?.scrollIntoView({ behavior: "smooth" })}>Find cleaners</Button>
-            </div>
-
-            <div className="mt-5 flex flex-wrap gap-3">
-              {user ? (
-                <Button size="lg" onClick={() => document.getElementById("cleaners")?.scrollIntoView({ behavior: "smooth" })}>
-                  <Search className="mr-1 h-4 w-4" /> Find a cleaner
-                </Button>
-              ) : (
-                <>
-                  <Button size="lg" onClick={() => navigate({ to: "/auth", search: { mode: "signup", role: "customer" } })}>
-                    <UserPlus className="mr-1 h-4 w-4" /> Hire a cleaner
-                  </Button>
-                  <Button size="lg" variant="outline" onClick={() => navigate({ to: "/auth", search: { mode: "signup", role: "cleaner" } })}>
-                    <Briefcase className="mr-1 h-4 w-4" /> Become a cleaner
-                  </Button>
-                </>
-              )}
-            </div>
-
-            <div className="mt-6 flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-success" /> Background-checked</div>
-              <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-primary" /> Same-day available</div>
-            </div>
-          </div>
-
-          <div className="relative">
-            <div className="absolute -inset-4 -z-10 rounded-[2.5rem] bg-[var(--gradient-warm)] opacity-30 blur-2xl" />
-            <img src={hero} alt="Smiling Kenyan cleaner" width={1280} height={896} className="h-full w-full rounded-3xl object-cover shadow-[var(--shadow-card)]" />
-          </div>
-        </div>
-      </section>
-
-      {/* Categories */}
-      <section className="border-y border-border/60 bg-secondary/40">
-        <div className="mx-auto max-w-6xl px-4 py-8">
-          <div className="flex flex-wrap gap-2">
-            <CategoryChip active={!activeCat} onClick={() => setActiveCat(null)} label="All services" iconName="Sparkles" />
-            {categories.data?.map((c) => (
-              <CategoryChip
-                key={c.id}
-                active={activeCat === c.id}
-                onClick={() => navigate({ to: "/services/$id", params: { id: c.id } })}
-                label={c.name}
-                iconName={c.icon ?? "Sparkles"}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Cleaners */}
-      <section id="cleaners" className="mx-auto max-w-6xl px-4 py-12">
-        <div className="mb-6 flex items-end justify-between">
-          <div>
-            <h2 className="font-display text-2xl font-bold md:text-3xl">Available cleaners</h2>
-            <p className="text-sm text-muted-foreground">{filtered.length} match your search</p>
-          </div>
+    <section className="relative min-h-[calc(100vh-4rem)] overflow-hidden bg-[var(--gradient-warm)]">
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col px-5 pb-8 pt-10">
+        <div className="flex flex-1 flex-col items-center justify-center text-center">
+          <Badge variant="outline" className="mb-5 border-primary/30 bg-card/80 text-primary backdrop-blur">
+            <Sparkles className="mr-1 h-3 w-3" /> SafiHub
+          </Badge>
+          <h1 className="font-display text-4xl font-bold leading-[1.1] tracking-tight md:text-5xl">
+            What would you like{" "}
+            <span className="rounded-lg bg-primary px-2 py-0.5 text-primary-foreground">to do</span>{" "}
+            today?
+          </h1>
+          <p className="mt-4 max-w-xs text-base text-muted-foreground">
+            Trusted cleaners across Kenya. Hire one or earn as one.
+          </p>
         </div>
 
+        <div className="space-y-3">
+          <BigChoice label="Hire a cleaner" onClick={() => onGo("customer")} />
+          <BigChoice label="Become a cleaner" onClick={() => onGo("cleaner")} />
+          <button onClick={onSignIn} className="mt-4 w-full text-center text-sm font-medium text-muted-foreground hover:text-foreground">
+            Already have an account? <span className="text-primary">Sign in</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BigChoice({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="group flex w-full items-center justify-between rounded-2xl border border-border bg-card px-6 py-5 text-left shadow-[var(--shadow-card)] transition hover:-translate-y-0.5 hover:border-primary hover:shadow-lg"
+    >
+      <span className="font-display text-lg font-semibold">{label}</span>
+      <ChevronRight className="h-5 w-5 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />
+    </button>
+  );
+}
+
+/* ---------- Logged-in customer ---------- */
+
+function CustomerHome({ name }: { name: string }) {
+  const [q, setQ] = useState("");
+  const cleaners = useQuery({ queryKey: ["cleaners"], queryFn: fetchApprovedCleaners });
+  const list = (cleaners.data ?? []).filter((c) =>
+    q ? `${c.full_name} ${c.location ?? ""} ${c.bio ?? ""}`.toLowerCase().includes(q.toLowerCase()) : true,
+  );
+
+  return (
+    <section className="mx-auto max-w-5xl px-4 py-10">
+      <Badge variant="outline" className="mb-3 border-primary/30 bg-primary/5 text-primary">
+        <Sparkles className="mr-1 h-3 w-3" /> Welcome back{name ? `, ${name}` : ""}
+      </Badge>
+      <h1 className="font-display text-3xl font-bold md:text-4xl">Find a cleaner</h1>
+      <p className="mt-1 text-muted-foreground">Vetted professionals, ready when you are.</p>
+
+      <div className="mt-6 flex max-w-md items-center gap-2 rounded-2xl border border-border bg-card p-1.5 shadow-[var(--shadow-card)]">
+        <div className="flex flex-1 items-center gap-2 px-3">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name or area" className="w-full bg-transparent py-2 text-sm outline-none" />
+        </div>
+      </div>
+
+      <div className="mt-8">
         {cleaners.isLoading ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="h-72 animate-pulse rounded-2xl bg-muted" />)}
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center">
-            <p className="text-muted-foreground">
-              {user ? "No cleaners match your search yet. Check back soon." : "No cleaners yet. Check back soon, or apply to become one."}
-            </p>
-            {!user && (
-              <Button asChild variant="outline" className="mt-4">
-                <Link to="/auth" search={{ mode: "signup", role: "cleaner" }}>Become a cleaner</Link>
-              </Button>
-            )}
+        ) : list.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center text-muted-foreground">
+            No cleaners available yet. Check back soon.
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((c) => <CleanerCard key={c.id} c={c} />)}
+            {list.map((c) => <CleanerCard key={c.id} c={c} />)}
           </div>
         )}
-      </section>
-    </>
-  );
-}
-
-function CategoryChip({ active, onClick, label, iconName }: { active: boolean; onClick: () => void; label: string; iconName: string }) {
-  const Ic = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[iconName] ?? Icons.Sparkles;
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
-        active ? "border-primary bg-primary text-primary-foreground shadow-[var(--shadow-soft)]" : "border-border bg-card text-foreground hover:bg-secondary"
-      }`}
-    >
-      <Ic className="h-4 w-4" /> {label}
-    </button>
+      </div>
+    </section>
   );
 }
 
@@ -214,16 +168,12 @@ function CleanerCard({ c }: { c: import("@/lib/queries").Cleaner }) {
           </span>
           <span className="text-xs text-muted-foreground">· {c.completed_jobs} {c.completed_jobs === 1 ? "job" : "jobs"}</span>
         </div>
-        {c.bio && <p className="line-clamp-2 text-sm text-muted-foreground">{c.bio}</p>}
-        <div className="mt-auto flex flex-wrap gap-1.5">
-          {c.categories.slice(0, 3).map((cat) => (
-            <span key={cat.id} className="rounded-full bg-secondary px-2.5 py-0.5 text-xs text-secondary-foreground">{cat.name}</span>
-          ))}
-        </div>
       </div>
     </Link>
   );
 }
+
+/* ---------- Cleaner / Admin dashboard ---------- */
 
 function StaffHome({ name, isCleaner, isAdmin }: { name: string; isCleaner: boolean; isAdmin: boolean }) {
   const { user } = useAuth();
