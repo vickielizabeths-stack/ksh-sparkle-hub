@@ -215,10 +215,10 @@ function StaffHome({ name, isCleaner, isAdmin }: { name: string; isCleaner: bool
         <Sparkles className="mr-1 h-3 w-3" /> Welcome back{name ? `, ${name}` : ""}
       </Badge>
       <h1 className="font-display text-3xl font-bold md:text-4xl">
-        {isCleaner && !isAdmin ? "I'm feeling lucky today!" : "Your dashboard"}
+        {isCleaner ? "I'm feeling lucky today!" : "Your dashboard"}
       </h1>
       <p className="mt-1 text-muted-foreground">
-        {isCleaner && !isAdmin ? "Find me work — new bookings will land right here." : isCleaner ? "Manage your profile and jobs from here." : "Review applications and platform activity."}
+        {isCleaner ? "Find me work — new bookings will land right here." : "Review applications and platform activity."}
       </p>
 
       <div className="mt-8 grid gap-5 md:grid-cols-2">
