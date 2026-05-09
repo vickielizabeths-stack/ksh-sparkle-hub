@@ -104,8 +104,8 @@ function CustomerHome({ name }: { name: string }) {
       <Badge variant="outline" className="mb-3 border-primary/30 bg-primary/5 text-primary">
         <Sparkles className="mr-1 h-3 w-3" /> Welcome back{name ? `, ${name}` : ""}
       </Badge>
-      <h1 className="font-display text-3xl font-bold md:text-4xl">Find a cleaner</h1>
-      <p className="mt-1 text-muted-foreground">Vetted professionals, ready when you are.</p>
+      <h1 className="font-display text-3xl font-bold md:text-4xl">I'm feeling lucky!</h1>
+      <p className="mt-1 text-muted-foreground">Find me jobs!.</p>
 
       <div className="mt-6 flex max-w-md items-center gap-2 rounded-2xl border border-border bg-card p-1.5 shadow-[var(--shadow-card)]">
         <div className="flex flex-1 items-center gap-2 px-3">
