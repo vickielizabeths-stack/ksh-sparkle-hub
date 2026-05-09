@@ -62,7 +62,7 @@ function LandingHome({ onGo, onSignIn }: { onGo: (role: "customer" | "cleaner") 
             today?
           </h1>
           <p className="mt-4 max-w-xs text-base text-muted-foreground">
-            Trusted cleaners across Kenya. Hire one or earn as one.
+            Vetted professional cleaners across Kenya. Hire one or earn as one today.
           </p>
         </div>
 
@@ -105,7 +105,7 @@ function CustomerHome({ name }: { name: string }) {
         <Sparkles className="mr-1 h-3 w-3" /> Welcome back{name ? `, ${name}` : ""}
       </Badge>
       <h1 className="font-display text-3xl font-bold md:text-4xl">I'm feeling lucky!</h1>
-      <p className="mt-1 text-muted-foreground">Find me jobs!.</p>
+      <p className="mt-1 text-muted-foreground">Find me jobs!</p>
 
       <div className="mt-6 flex max-w-md items-center gap-2 rounded-2xl border border-border bg-card p-1.5 shadow-[var(--shadow-card)]">
         <div className="flex flex-1 items-center gap-2 px-3">
@@ -121,7 +121,7 @@ function CustomerHome({ name }: { name: string }) {
           </div>
         ) : list.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center text-muted-foreground">
-            No cleaners available yet. Check back soon.
+            No jobs available yet. Check back soon.
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
