@@ -185,23 +185,29 @@ function AuthPage() {
       if (!userId) throw new Error("Verification failed");
 
       if (role === "cleaner") {
-  await finishCleanerProfile(userId);
-  await supabase.from("user_roles").upsert(
-    { user_id: userId, role: "cleaner" },
-    { onConflict: "user_id,role", ignoreDuplicates: true }
-  );
-  await refreshRoles();
-  toast.success("Application submitted! An admin will review your profile shortly.");
-  navigate({ to: "/" });
-} else {
-  await supabase.from("user_roles").upsert(
-    { user_id: userId, role: "customer" },
-    { onConflict: "user_id,role", ignoreDuplicates: true }
-  );
-  await refreshRoles();
-  toast.success("Email verified!");
-  navigate({ to: "/" });
-}
+        await finishCleanerProfile(userId);
+        await supabase.from("user_roles").upsert(
+          { user_id: userId, role: "cleaner" },
+          { onConflict: "user_id,role", ignoreDuplicates: true }{ onConflict: "user_id,role", ignoreDuplicates: true }
+          );
+        await refreshRoles();
+        toast.success("Application submitted! An admin will review your profile shortly.");
+        navigate({ to: "/" });
+      } else {
+        await supabase.from("user_roles").upsert(
+          { user_id: userId, role: "customer" },
+          { onConflict: "user_id,role", ignoreDuplicates: true }
+         );
+         await refreshRoles();
+        toast.success("Email verified!");
+        navigate({ to: "/" });
+      }
+    } catch (err) {
+      const m = err instanceof Error ? err.message : "Invalid code";
+      toast.error(m);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resendOtp = async () => {
