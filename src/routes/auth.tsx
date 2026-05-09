@@ -188,7 +188,7 @@ function AuthPage() {
         await finishCleanerProfile(userId);
         await supabase.from("user_roles").upsert(
           { user_id: userId, role: "cleaner" },
-          { onConflict: "user_id,role", ignoreDuplicates: true }{ onConflict: "user_id,role", ignoreDuplicates: true }
+          { onConflict: "user_id,role", ignoreDuplicates: true }
           );
         await refreshRoles();
         toast.success("Application submitted! An admin will review your profile shortly.");
