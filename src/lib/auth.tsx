@@ -26,6 +26,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRoles((data ?? []).map((r) => r.role as AppRole));
   };
 
+  const refreshRoles = async () => {
+    const { data } = await supabase.auth.getSession();
+    setSession(data.session);
+    setLoading(true);
+    await loadRoles(data.session?.user.id);
+    setLoading(false);
+  };
+
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
