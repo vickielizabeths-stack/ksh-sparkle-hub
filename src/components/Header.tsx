@@ -24,9 +24,6 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
-          <Link to="/" className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground" activeOptions={{ exact: true }} activeProps={{ className: "bg-secondary text-foreground" }}>
-            Browse
-          </Link>
           {user && (
             <Link to="/my-bookings" className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground" activeProps={{ className: "bg-secondary text-foreground" }}>
               My Bookings
@@ -45,12 +42,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          {!user ? (
-            <>
-              <Button variant="ghost" onClick={() => navigate({ to: "/auth" })}>Sign in</Button>
-              <Button onClick={() => navigate({ to: "/auth", search: { mode: "signup" } })}>Get started</Button>
-            </>
-          ) : (
+          {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon"><Menu className="h-4 w-4" /></Button>
@@ -58,7 +50,7 @@ export function Header() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate({ to: "/" })}>Find a cleaner</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate({ to: "/" })}>Home</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate({ to: "/my-bookings" })}>My bookings</DropdownMenuItem>
                 {isCleaner && <DropdownMenuItem onClick={() => navigate({ to: "/cleaner/jobs" })}>My jobs</DropdownMenuItem>}
                 {isCleaner && <DropdownMenuItem onClick={() => navigate({ to: "/cleaner/onboarding" })}>My profile</DropdownMenuItem>}
