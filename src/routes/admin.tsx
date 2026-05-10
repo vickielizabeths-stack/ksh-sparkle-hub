@@ -18,8 +18,8 @@ import { ShieldCheck, Users, Sparkles, ClipboardList, CheckCircle2, UserCog } fr
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async () => {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) throw redirect({ to: "/auth", search: { mode: "signin" } });
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) throw redirect({ to: "/auth", search: { mode: "signin" } });
   },
   component: AdminPage,
 });
@@ -31,9 +31,9 @@ function AdminPage() {
   const sessionQuery = useQuery({
     queryKey: ["admin-session"],
     queryFn: async () => {
-      const { data, error } = await supabase.auth.getSession();
+      const { data, error } = await supabase.auth.getUser();
       if (error) throw error;
-      return data.session;
+      return data.user;
     },
   });
 
