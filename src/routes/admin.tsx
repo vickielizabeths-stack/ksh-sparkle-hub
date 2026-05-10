@@ -3,7 +3,6 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth";
 import { getAdminDashboard } from "@/lib/admin.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,29 +18,21 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminPage() {
-  const { user, loading } = useAuth();
   const qc = useQueryClient();
   const fetchDash = useServerFn(getAdminDashboard);
 
-  // Independent admin check straight from DB (avoids stale useAuth roles).
-  const adminCheck = useQuery({
-    queryKey: ["am-i-admin", user?.id],
-    enabled: !!user,
+  const sessionQuery = useQuery({
+    queryKey: ["admin-session"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user!.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      return !!data;
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      return data.session;
     },
   });
-  const isAdmin = adminCheck.data === true;
 
   const dash = useQuery({
     queryKey: ["admin-dashboard"],
-    enabled: isAdmin,
+    enabled: !!sessionQuery.data,
     queryFn: () => fetchDash(),
   });
 
@@ -57,29 +48,19 @@ function AdminPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const grantAdmin = async () => {
-    if (!user) return;
-    const { error } = await supabase.rpc("grant_first_admin");
-    if (error) return toast.error(error.message);
-    toast.success("You are now an admin. Reloading…");
-    setTimeout(() => window.location.reload(), 800);
-  };
+  if (sessionQuery.isLoading || dash.isLoading) return <div className="p-12 text-center text-muted-foreground">Loading dashboard…</div>;
 
-  if (loading || adminCheck.isLoading) return <div className="p-12 text-center text-muted-foreground">Loading…</div>;
+  if (!sessionQuery.data) return <div className="p-12 text-center text-muted-foreground">Loading…</div>;
 
-  if (!isAdmin) {
+  if (dash.error) {
     return (
       <div className="mx-auto max-w-md p-12 text-center">
         <ShieldCheck className="mx-auto h-10 w-10 text-muted-foreground" />
         <h1 className="mt-3 font-display text-2xl font-bold">Admin access required</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Bootstrap your account as the first admin.</p>
-        <Button className="mt-4" onClick={grantAdmin}>Make me admin</Button>
+        <p className="mt-2 text-sm text-muted-foreground">This page is only available to approved admins.</p>
       </div>
     );
   }
-
-  if (dash.isLoading) return <div className="p-12 text-center text-muted-foreground">Loading dashboard…</div>;
-  if (dash.error) return <div className="p-12 text-center text-destructive">Failed to load: {(dash.error as Error).message}</div>;
 
   const data = dash.data!;
   const pendingCleaners = data.cleaners.filter((c) => c.status === "pending");
