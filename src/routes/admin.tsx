@@ -19,10 +19,25 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminPage() {
-  const { user, roles, loading } = useAuth();
-  const isAdmin = roles.includes("admin");
+  const { user, loading } = useAuth();
   const qc = useQueryClient();
   const fetchDash = useServerFn(getAdminDashboard);
+
+  // Independent admin check straight from DB (avoids stale useAuth roles).
+  const adminCheck = useQuery({
+    queryKey: ["am-i-admin", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user!.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      return !!data;
+    },
+  });
+  const isAdmin = adminCheck.data === true;
 
   const dash = useQuery({
     queryKey: ["admin-dashboard"],
