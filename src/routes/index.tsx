@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, Navigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Search, Sparkles, ChevronRight, ClipboardList, UserCircle, ShieldAlert } from "lucide-react";
 import { useState } from "react";
