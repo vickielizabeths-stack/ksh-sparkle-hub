@@ -5,10 +5,10 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 export const getAdminDashboard = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
+    const { userId } = context;
 
     // Authorize: caller must be admin.
-    const { data: roleRow } = await supabase
+    const { data: roleRow } = await supabaseAdmin
       .from("user_roles")
       .select("role")
       .eq("user_id", userId)
@@ -34,9 +34,22 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
       rolesByUser.set(r.user_id, arr);
     });
 
-    const profileById = new Map<string, { full_name: string | null; phone: string | null; national_id: string | null; date_of_birth: string | null }>();
+    const profileById = new Map<
+      string,
+      {
+        full_name: string | null;
+        phone: string | null;
+        national_id: string | null;
+        date_of_birth: string | null;
+      }
+    >();
     (profilesRes.data ?? []).forEach((p) =>
-      profileById.set(p.id, { full_name: p.full_name, phone: p.phone, national_id: p.national_id, date_of_birth: p.date_of_birth }),
+      profileById.set(p.id, {
+        full_name: p.full_name,
+        phone: p.phone,
+        national_id: p.national_id,
+        date_of_birth: p.date_of_birth,
+      }),
     );
 
     const users = (profilesRes.data ?? []).map((p) => ({
