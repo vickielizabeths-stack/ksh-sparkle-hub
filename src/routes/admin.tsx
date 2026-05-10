@@ -65,7 +65,7 @@ function AdminPage() {
     setTimeout(() => window.location.reload(), 800);
   };
 
-  if (loading) return <div className="p-12 text-center text-muted-foreground">Loading…</div>;
+  if (loading || adminCheck.isLoading) return <div className="p-12 text-center text-muted-foreground">Loading…</div>;
 
   if (!isAdmin) {
     return (
