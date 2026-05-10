@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, Navigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Search, Sparkles, ChevronRight, ClipboardList, UserCircle, ShieldAlert } from "lucide-react";
 import { useState } from "react";
@@ -37,7 +37,9 @@ function Home() {
 
   if (authLoading) return <div className="mx-auto max-w-5xl px-4 py-20 text-center text-muted-foreground">Loading…</div>;
 
-  if (user && (isCleaner || isAdmin)) {
+  if (user && isAdmin) return <Navigate to="/admin" />;
+
+  if (user && isCleaner) {
     return <StaffHome name={greetingName} isCleaner={isCleaner} isAdmin={isAdmin} />;
   }
 
