@@ -5,10 +5,10 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 export const getAdminDashboard = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
+    const { userId } = context;
 
     // Authorize: caller must be admin.
-    const { data: roleRow } = await supabase
+    const { data: roleRow } = await supabaseAdmin
       .from("user_roles")
       .select("role")
       .eq("user_id", userId)
