@@ -6,7 +6,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { getAdminDashboard } from "@/lib/admin.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ShieldCheck, Users, Sparkles, ClipboardList, CheckCircle2, UserCog } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -48,16 +55,20 @@ function AdminPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  if (sessionQuery.isLoading || dash.isLoading) return <div className="p-12 text-center text-muted-foreground">Loading dashboard…</div>;
+  if (sessionQuery.isLoading || dash.isLoading)
+    return <div className="p-12 text-center text-muted-foreground">Loading dashboard…</div>;
 
-  if (!sessionQuery.data) return <div className="p-12 text-center text-muted-foreground">Loading…</div>;
+  if (!sessionQuery.data)
+    return <div className="p-12 text-center text-muted-foreground">Loading…</div>;
 
   if (dash.error) {
     return (
       <div className="mx-auto max-w-md p-12 text-center">
         <ShieldCheck className="mx-auto h-10 w-10 text-muted-foreground" />
         <h1 className="mt-3 font-display text-2xl font-bold">Admin access required</h1>
-        <p className="mt-2 text-sm text-muted-foreground">This page is only available to approved admins.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          This page is only available to approved admins.
+        </p>
       </div>
     );
   }
@@ -76,11 +87,32 @@ function AdminPage() {
 
       {/* Stats */}
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <StatCard icon={<Users className="h-4 w-4" />} label="Total users" value={data.stats.totalUsers} />
-        <StatCard icon={<UserCog className="h-4 w-4" />} label="Cleaners" value={data.stats.totalCleaners} />
-        <StatCard icon={<ShieldCheck className="h-4 w-4" />} label="Pending applications" value={data.stats.pendingApplications} highlight={data.stats.pendingApplications > 0} />
-        <StatCard icon={<ClipboardList className="h-4 w-4" />} label="Total bookings" value={data.stats.totalBookings} />
-        <StatCard icon={<CheckCircle2 className="h-4 w-4" />} label="Completed" value={data.stats.completedBookings} />
+        <StatCard
+          icon={<Users className="h-4 w-4" />}
+          label="Total users"
+          value={data.stats.totalUsers}
+        />
+        <StatCard
+          icon={<UserCog className="h-4 w-4" />}
+          label="Cleaners"
+          value={data.stats.totalCleaners}
+        />
+        <StatCard
+          icon={<ShieldCheck className="h-4 w-4" />}
+          label="Pending applications"
+          value={data.stats.pendingApplications}
+          highlight={data.stats.pendingApplications > 0}
+        />
+        <StatCard
+          icon={<ClipboardList className="h-4 w-4" />}
+          label="Total bookings"
+          value={data.stats.totalBookings}
+        />
+        <StatCard
+          icon={<CheckCircle2 className="h-4 w-4" />}
+          label="Completed"
+          value={data.stats.completedBookings}
+        />
       </div>
 
       {/* Pending applications */}
@@ -90,11 +122,18 @@ function AdminPage() {
         ) : (
           <div className="space-y-3">
             {pendingCleaners.map((c) => (
-              <div key={c.id} className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+              <div
+                key={c.id}
+                className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]"
+              >
                 <div className="flex flex-wrap items-start gap-4">
                   <div className="h-16 w-16 overflow-hidden rounded-xl bg-secondary">
                     {c.avatar_url ? (
-                      <img src={c.avatar_url} alt={c.profile?.full_name ?? "cleaner"} className="h-full w-full object-cover" />
+                      <img
+                        src={c.avatar_url}
+                        alt={c.profile?.full_name ?? "cleaner"}
+                        className="h-full w-full object-cover"
+                      />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center font-display text-xl text-muted-foreground">
                         {(c.profile?.full_name ?? "?").charAt(0)}
@@ -102,9 +141,12 @@ function AdminPage() {
                     )}
                   </div>
                   <div className="flex-1 min-w-[200px]">
-                    <h3 className="font-display text-lg font-semibold">{c.profile?.full_name ?? "Unnamed"}</h3>
+                    <h3 className="font-display text-lg font-semibold">
+                      {c.profile?.full_name ?? "Unnamed"}
+                    </h3>
                     <p className="text-sm text-muted-foreground">
-                      {c.location ?? "—"} · {c.years_experience} yrs · KES {Number(c.hourly_rate).toLocaleString()}/hr
+                      {c.location ?? "—"} · {c.years_experience} yrs · KES{" "}
+                      {Number(c.hourly_rate).toLocaleString()}/hr
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {c.email && <>📧 {c.email} · </>}
@@ -116,8 +158,21 @@ function AdminPage() {
                     {c.bio && <p className="mt-2 text-sm">{c.bio}</p>}
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" disabled={setStatusMut.isPending} onClick={() => setStatusMut.mutate({ id: c.id, status: "approved" })}>Approve</Button>
-                    <Button size="sm" variant="outline" disabled={setStatusMut.isPending} onClick={() => setStatusMut.mutate({ id: c.id, status: "rejected" })}>Reject</Button>
+                    <Button
+                      size="sm"
+                      disabled={setStatusMut.isPending}
+                      onClick={() => setStatusMut.mutate({ id: c.id, status: "approved" })}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={setStatusMut.isPending}
+                      onClick={() => setStatusMut.mutate({ id: c.id, status: "rejected" })}
+                    >
+                      Reject
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -128,7 +183,9 @@ function AdminPage() {
 
       {/* All users */}
       <Section title="All users" subtitle={`${data.users.length} total`}>
-        {data.users.length === 0 ? <Empty>No users yet.</Empty> : (
+        {data.users.length === 0 ? (
+          <Empty>No users yet.</Empty>
+        ) : (
           <div className="rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
             <Table>
               <TableHeader>
@@ -148,11 +205,20 @@ function AdminPage() {
                     <TableCell>{u.phone ?? "—"}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {u.roles.length === 0 ? <span className="text-xs text-muted-foreground">none</span> :
-                          u.roles.map((r) => <Badge key={r} variant={r === "admin" ? "default" : "secondary"}>{r}</Badge>)}
+                        {u.roles.length === 0 ? (
+                          <span className="text-xs text-muted-foreground">none</span>
+                        ) : (
+                          u.roles.map((r) => (
+                            <Badge key={r} variant={r === "admin" ? "default" : "secondary"}>
+                              {r}
+                            </Badge>
+                          ))
+                        )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{new Date(u.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {new Date(u.created_at).toLocaleDateString()}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -163,7 +229,9 @@ function AdminPage() {
 
       {/* All bookings */}
       <Section title="All bookings" subtitle={`${data.bookings.length} total`}>
-        {data.bookings.length === 0 ? <Empty>No bookings yet.</Empty> : (
+        {data.bookings.length === 0 ? (
+          <Empty>No bookings yet.</Empty>
+        ) : (
           <div className="rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
             <Table>
               <TableHeader>
@@ -178,8 +246,22 @@ function AdminPage() {
               <TableBody>
                 {data.bookings.map((b) => (
                   <TableRow key={b.id}>
-                    <TableCell className="text-xs">{new Date(b.scheduled_at).toLocaleString()}</TableCell>
-                    <TableCell><Badge variant={b.status === "completed" ? "default" : b.status === "cancelled" ? "destructive" : "secondary"}>{b.status}</Badge></TableCell>
+                    <TableCell className="text-xs">
+                      {new Date(b.scheduled_at).toLocaleString()}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          b.status === "completed"
+                            ? "default"
+                            : b.status === "cancelled"
+                              ? "destructive"
+                              : "secondary"
+                        }
+                      >
+                        {b.status}
+                      </Badge>
+                    </TableCell>
                     <TableCell>{b.customer_name}</TableCell>
                     <TableCell>{b.cleaner_name}</TableCell>
                     <TableCell>KES {Number(b.total_price).toLocaleString()}</TableCell>
@@ -192,22 +274,47 @@ function AdminPage() {
       </Section>
 
       <p className="mt-10 text-center text-xs text-muted-foreground">
-        <Link to="/" className="hover:text-foreground">← Back to home</Link>
+        <Link to="/" className="hover:text-foreground">
+          ← Back to home
+        </Link>
       </p>
     </div>
   );
 }
 
-function StatCard({ icon, label, value, highlight }: { icon: React.ReactNode; label: string; value: number; highlight?: boolean }) {
+function StatCard({
+  icon,
+  label,
+  value,
+  highlight,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  highlight?: boolean;
+}) {
   return (
-    <div className={`rounded-2xl border bg-card p-4 shadow-[var(--shadow-card)] ${highlight ? "border-primary" : "border-border"}`}>
-      <div className="flex items-center gap-2 text-muted-foreground">{icon}<span className="text-xs">{label}</span></div>
+    <div
+      className={`rounded-2xl border bg-card p-4 shadow-[var(--shadow-card)] ${highlight ? "border-primary" : "border-border"}`}
+    >
+      <div className="flex items-center gap-2 text-muted-foreground">
+        {icon}
+        <span className="text-xs">{label}</span>
+      </div>
       <div className="mt-2 font-display text-3xl font-bold">{value}</div>
     </div>
   );
 }
 
-function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+function Section({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="mt-10">
       <div className="mb-3 flex items-baseline justify-between">
@@ -220,5 +327,9 @@ function Section({ title, subtitle, children }: { title: string; subtitle?: stri
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">{children}</div>;
+  return (
+    <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
+      {children}
+    </div>
+  );
 }
